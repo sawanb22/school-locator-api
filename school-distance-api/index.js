@@ -8,7 +8,7 @@ app.use(express.json());
 
 //routes
 const schoolRoutes = require('./routes/school');
-app.use("/test",(req,res) =>{ res.json("OK")})
+app.get("/test",(req,res) =>{ res.json("OK")})
 app.use('/', schoolRoutes);
 
 
