@@ -5,7 +5,9 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-
+app.use((req,res) =>{
+    console.log(req.url);
+})
 //routes
 const schoolRoutes = require('./routes/school');
 app.get("/test",(req,res) =>{ res.json("OK")})
