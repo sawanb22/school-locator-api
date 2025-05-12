@@ -1,5 +1,5 @@
 const express = require('express');
-const { add_school_details, get_school_details } = require('../controllers/SchoolController');
+const { add_school_details, get_school_details } = require('../controllers/schoolController');
 const router = express.Router();
 
 
