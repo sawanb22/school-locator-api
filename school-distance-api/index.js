@@ -18,19 +18,5 @@ app.use('/', schoolRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT,async  () => {
-    console.log("pool : ", pool);
-    const createTableQuery = `
-    CREATE TABLE IF NOT EXISTS schools (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        name VARCHAR(255) NOT NULL,
-        address VARCHAR(255) NOT NULL,
-        latitude FLOAT,
-        longitude FLOAT
-    );
-`;
-
-    await pool.query(createTableQuery);
-
-
     console.log(`server running on port ${PORT}`);
 });
