@@ -1,0 +1,81 @@
+const pool = require('../db.js');
+
+
+// i created add_school_function for adding school details to the school table in database 
+const add_school_details = async (req,res) => {
+    const { name, address, latitude, longitude } = req.body;
+    if (!name || !address || !latitude || !longitude) {        // created this for all values must be filled
+        return res.status(400).json({ error: 'name, address, latitude and longitude are required'});
+    }
+    try {
+        const result = await pool.query(`INSERT INTO schools (name, address, latitude, longitude) VALUES (?,?,?,?)`,
+            [name,address,longitude,latitude]);
+
+      
+        res.status(200).json({ message: 'School Registered Successfully' })
+    } catch (error) {
+        console.error('Error adding school details:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+// this is a function for the distance bw two cordinates i used Haversine formula for this.
+const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
+    const toRad = (degree) => degree * (Math.PI / 180);
+
+    const lat1 = toRad(u_latitude);
+    const lon1 = toRad(u_longitude);
+    const lat2 = toRad(latitude);
+    const lon2 = toRad(longitude);
+
+    const dlat = lat2 - lat1;
+    const dlon = lon2 - lon1;
+    
+    const a =
+    Math.sin(dlat / 2) * Math.sin(dlat / 2) +
+    Math.cos(lat1) * Math.cos(lat2) *
+    Math.sin(dlon / 2) * Math.sin(dlon /2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const r = 6371;
+
+    const distance = r * c;
+
+    return distance;
+};
+
+
+
+const get_school_details = async (req,res) => {
+    const { u_latitude, u_longitude } = req.query;
+    console.log(req.query);
+    
+    try {
+        const [result] = await pool.query(`SELECT * FROM schools`);
+
+        let schools = result.map((school) =>{
+            let dist = calculateDistance(u_latitude,u_longitude,school.latitude,school.longitude);
+            school.distance = dist 
+            return school
+        })
+
+        schools = schools.sort((a,b) => a.distance - b.distance);
+
+        res.json({
+            message : "List of schools",
+            schools
+        })
+        
+    }catch(err){
+        console.log(err);
+        res.status(500)
+    }
+
+}
+
+
+
+
+module.exports = {add_school_details, get_school_details};
