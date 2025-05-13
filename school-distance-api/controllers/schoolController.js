@@ -1,15 +1,17 @@
 const pool = require('../db.js');
 
 
-// i created add_school_function for adding school details to the school table in database 
+// this function add school details to the school table in database 
 const add_school_details = async (req,res) => {
     const { name, address, latitude, longitude } = req.body;
     if (!name || !address || !latitude || !longitude) {        // created this for all values must be filled
         return res.status(400).json({ error: 'name, address, latitude and longitude are required'});
     }
     try {
-        const result = await pool.query(`INSERT INTO schools (name, address, latitude, longitude) VALUES (?,?,?,?)`,
-            [name,address,longitude,latitude]);
+        const result = await pool.query(
+            `INSERT INTO schools (name, address, latitude, longitude) VALUES (?,?,?,?)`,
+            [name, address, latitude, longitude]
+        );
 
       
         res.status(200).json({ message: 'School Registered Successfully' })
@@ -20,7 +22,7 @@ const add_school_details = async (req,res) => {
 };
 
 
-// this is a function for the distance bw two cordinates i used Haversine formula for this.
+// this is a function for the distance bw two cordinates. used Haversine formula for this.
 const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
     const toRad = (degree) => degree * (Math.PI / 180);
 
@@ -47,9 +49,9 @@ const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
 };
 
 
-
+// for get details of user cordinates and school coordinates and find distance bw them
 const get_school_details = async (req,res) => {
-    const { u_latitude, u_longitude } = req.query;
+    const { u_latitude, u_longitude } = req.query; // user cordinates from user as parameter 
     console.log(req.query);
     
     try {

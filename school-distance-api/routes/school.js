@@ -3,6 +3,7 @@ const { add_school_details, get_school_details } = require('../controllers/schoo
 const router = express.Router();
 
 
+// routes for both apis addSchool and listSchools
 router.post("/addSchool", add_school_details);
 router.get("/listSchools", get_school_details);
 
