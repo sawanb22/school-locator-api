@@ -24,6 +24,8 @@ const add_school_details = async (req,res) => {
 
 // this is a function for the distance bw two cordinates. used Haversine formula for this.
 const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
+    console.log('calculateDistance called with:', u_latitude, u_longitude, latitude, longitude);
+    
     const toRad = (degree) => degree * (Math.PI / 180);
 
     const lat1 = toRad(u_latitude);
@@ -44,7 +46,8 @@ const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
     const r = 6371;
 
     const distance = r * c;
-
+    
+    console.log('Distance calculated:', distance);
     return distance;
 };
 
@@ -54,17 +57,33 @@ const get_school_details = async (req,res) => {
     const { u_latitude, u_longitude } = req.query; // user cordinates from user as parameter 
     console.log(req.query);
     
+    // Convert strings to numbers and validate
+    const userLat = parseFloat(u_latitude);
+    const userLng = parseFloat(u_longitude);
+    
+    if (!userLat || !userLng || isNaN(userLat) || isNaN(userLng)) {
+        return res.status(400).json({ 
+            error: 'Valid u_latitude and u_longitude are required as query parameters' 
+        });
+    }
+    
     try {
         const [result] = await pool.query(`SELECT * FROM schools`);
-
         let schools = result.map((school) =>{
-            let dist = calculateDistance(u_latitude,u_longitude,school.latitude,school.longitude);
-            school.distance = dist 
+            // Convert database values to numbers too
+            const schoolLat = parseFloat(school.latitude);
+            const schoolLng = parseFloat(school.longitude);
+            
+            console.log('User coords:', userLat, userLng);
+            console.log('School coords:', schoolLat, schoolLng);
+            
+            let dist = calculateDistance(userLat, userLng, schoolLat, schoolLng);
+            console.log('Calculated distance:', dist);
+            
+            school.distance = Math.round(dist * 100) / 100; // Round to 2 decimal places
             return school
         })
-
         schools = schools.sort((a,b) => a.distance - b.distance);
-
         res.json({
             message : "List of schools",
             schools
@@ -72,7 +91,7 @@ const get_school_details = async (req,res) => {
         
     }catch(err){
         console.log(err);
-        res.status(500)
+        res.status(500).json({ error: 'Internal server error' });
     }
 
 }
