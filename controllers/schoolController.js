@@ -4,17 +4,36 @@ const pool = require('../db.js');
 // this function add school details to the school table in database 
 const add_school_details = async (req,res) => {
     const { name, address, latitude, longitude } = req.body;
-    if (!name || !address || !latitude || !longitude) {        // created this for all values must be filled
-        return res.status(400).json({ error: 'name, address, latitude and longitude are required'});
+
+    // Basic presence checks
+    if (name == null || address == null || latitude == null || longitude == null) {
+        return res.status(400).json({ error: 'name, address, latitude and longitude are required' });
     }
+
+    // Trim and coerce types
+    const nameStr = String(name).trim();
+    const addressStr = String(address).trim();
+    const latNum = parseFloat(latitude);
+    const lonNum = parseFloat(longitude);
+
+    // Validate values and ranges
+    if (!nameStr || !addressStr) {
+        return res.status(400).json({ error: 'name and address must be non-empty strings' });
+    }
+    if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
+        return res.status(400).json({ error: 'latitude and longitude must be valid numbers' });
+    }
+    if (latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
+        return res.status(400).json({ error: 'latitude must be between -90 and 90; longitude between -180 and 180' });
+    }
+
     try {
-        const result = await pool.query(
+        await pool.query(
             `INSERT INTO schools (name, address, latitude, longitude) VALUES (?,?,?,?)`,
-            [name, address, latitude, longitude]
+            [nameStr, addressStr, latNum, lonNum]
         );
 
-      
-        res.status(200).json({ message: 'School Registered Successfully' })
+        res.status(200).json({ message: 'School Registered Successfully' });
     } catch (error) {
         console.error('Error adding school details:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -50,6 +69,7 @@ const calculateDistance = (u_latitude, u_longitude, latitude, longitude) => {
     console.log('Distance calculated:', distance);
     return distance;
 };
+
 
 
 // for get details of user cordinates and school coordinates and find distance bw them
